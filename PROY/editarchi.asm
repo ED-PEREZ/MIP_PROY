@@ -1,8 +1,7 @@
 .MODEL SMALL
-
 .STACK
-
 .DATA
+
  ;variables
  msj1 db "DIGITE EL NOMBRE DEL ARCHIVO:","$";
  db 13,10,13,10,"$"
@@ -13,59 +12,56 @@
  captura DB 60 DUP (0)
  captura2 DB 60 DUP (0)
  maneja dw ?
- ncar db 60 dup('')
 
 .code
+
+Mensaje MACRO texto
+mov AH,9
+mov DX,OFFSET texto
+int 21h
+ENDM
+
 public _editarchi
 _editarchi proc
 inicio:
- MOV AX,@DATA
- MOV DS,AX
- mov ah,09h
- mov dx,offset msj1
- int 21h
- call lee
- mov ah,09h
- mov dx,offset salto
- int 21h
+mov AX,@DATA
+mov DS,AX
 
- mov ah,09h
- mov dx,offset msj2
- int 21h
- call lee2
+Mensaje msj1
+call lee
+Mensaje salto
 
-editar:                 ;abrir el archivo
-mov ah,3dh
-mov al,1h               ;Abrimos el archivo en solo escritura.
-LEA dx, captura+2
+Mensaje msj2
+call lee2
+Mensaje salto
+
+;abrir el archivo
+mov ah,3ch ;
+xor CX,cx ;
+LEA dx,captura+2
 int 21h
-jz salir                ;Si hubo error
-;Escritura de archivo
-mov bx,ax
-mov cx,offset ncar               ;num de caracteres a grabar
-lea dx,captura2+2  
+mov maneja,ax              ;Handle
+mov cx,1
+editar: 
+push cx
 mov ah,40h
+mov bx,maneja
+mov cx,60
+lea dx,captura2+2           ;texto
+int 21h
+pop cx
+loop editar
+mov ah,3eh                  ;CIERRE DE ARCHIVO
+mov bx,maneja
 int 21h
 
-mov ah,09h
-mov dx,offset salto
-int 21h
-mov ah,09h
-mov dx,offset msj3
-int 21h
-mov ah,09h
-mov dx,offset salto
-int 21h
+Mensaje salto
+Mensaje msj3
+Mensaje salto
 
-cmp cx,ax
-jne salir ;error salir
-mov ah,3eh ;Cierre de archivo
+salir:
+mov ax,4c00h
 int 21h
-
-
- salir:
- mov ax,4c00h
- int 21h
 
  ;Etiquetas para capturar cadenas
 
@@ -84,7 +80,7 @@ int 21h
  ;captura2
  lee2:
  LEA DX,captura2            ; Puntero a la dirección para la entrada
- MOV BYTE PTR [captura2],offset ncar  ; Fijamos los 60 caracteres
+ MOV BYTE PTR [captura2],60 ; Fijamos los 60 caracteres
  MOV AH,10                  ; función de entrada de teclado
  INT 21h                    ; LLamar a la interrupción del DOS
  MOV BL,[captura2+1]        ; Esta es la longitud efectiva tecleada

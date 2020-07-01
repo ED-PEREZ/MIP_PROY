@@ -1,7 +1,5 @@
 .MODEL SMALL
-
 .STACK
-
 .DATA
  ;variables
  msj1 db "DIGITE EL NOMBRE DEL ARCHIVO:","$";
@@ -34,14 +32,15 @@ inicio:
  mov dx,offset msj2
  int 21h
  call lee2
- ;crear archivo
+;crear archivo
  mov ah,3ch ;
  xor CX,cx ;
  LEA dx, captura+2
  int 21h
  mov maneja,ax              ;Handle
  mov cx,1
- nuevo: push cx
+nuevo: 
+push cx
 mov ah,40h
 mov bx,maneja
 mov cx,60
