@@ -1,0 +1,286 @@
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:30	    Page 1
+coparchi.ASM
+
+
+
+      1	0000			     .MODEL SMALL
+      2	0000			     .STACK
+      3	0000			     .DATA
+      4				      ;variables
+      5	0000  44 49 47 49 54 45	20+   msj1 db "DIGITE EL NOMBRE	DEL ARCHIVO A COPIAR: ","$";
+      6	      45 4C 20 4E 4F 4D	42+
+      7	      52 45 20 44 45 4C	20+
+      8	      41 52 43 48 49 56	4F+
+      9	      20 41 20 43 4F 50	49+
+     10	      41 52 3A 20 24
+     11	0028  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     12	002D  44 49 47 49 54 45	20+   msj2 db "DIGITE EL NOMBRE	DE LA COPIA: ","$";
+     13	      45 4C 20 4E 4F 4D	42+
+     14	      52 45 20 44 45 20	4C+
+     15	      41 20 43 4F 50 49	41+
+     16	      3A 20 24
+     17	004C  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     18	0051  41 52 43 48 49 56	4F+   msjs db "ARCHIVO COPIADO EXITOSAMENTE $";
+     19	      20 43 4F 50 49 41	44+
+     20	      4F 20 45 58 49 54	4F+
+     21	      53 41 4D 45 4E 54	45+
+     22	      20 24
+     23	006F  4F 50 45 52 41 43	49+   msje db "OPERACION FALLIDA $";
+     24	      4F 4E 20 46 41 4C	4C+
+     25	      49 44 41 20 24
+     26
+     27	0082  2D 3E 20 45 52 52	4F+  msje1 db "-> ERROR	EN ABRIR ARCHIVO$";
+     28	      52 20 45 4E 20 41	42+
+     29	      52 49 52 20 41 52	43+
+     30	      48 49 56 4F 24
+     31	009C  2D 3E 20 45 52 52	4F+  msje2 db "-> ERROR	EN CREAR ARCHIVO$";
+     32	      52 20 45 4E 20 43	52+
+     33	      45 41 52 20 41 52	43+
+     34	      48 49 56 4F 24
+     35	00B6  2D 3E 20 45 52 52	4F+  msje3 db "-> ERROR	EN LEER	ARCHIVO$";
+     36	      52 20 45 4E 20 4C	45+
+     37	      45 52 20 41 52 43	48+
+     38	      49 56 4F 24
+     39	00CF  2D 3E 20 45 52 52	4F+  msje4 db "-> ERROR	EN ESCRIBIR ARCHIVO$";
+     40	      52 20 45 4E 20 45	53+
+     41	      43 52 49 42 49 52	20+
+     42	      41 52 43 48 49 56	4F+
+     43	      24
+     44
+     45	00EC  0D 0A 24		      salto DB 13,10,'$'
+     46	00EF  0C*(00)		      captura DB 12 DUP	(0)
+     47	00FB  78*(00)		      captura2 DB 120 DUP (0)
+     48	0173  ????		      manejae dw ?
+     49	0175  ????		      manejas dw ?
+     50	0177  78*(??)		      cad db 120 DUP (?)
+     51
+     52	01EF			     .code
+     53
+     54				     Mensaje MACRO texto
+     55				     mov AH,9
+     56				     mov DX,OFFSET texto
+     57				     int 21h
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:30	    Page 2
+coparchi.ASM
+
+
+
+     58				     ENDM
+     59
+     60				     public _coparchi
+     61	0000			     _coparchi proc
+     62
+     63	0000			     inicio:
+     64	0000  B8 0000s		     mov ax,@DATA
+     65	0003  8E D8		     mov ds,ax
+     66	0005  8E C0		     mov es,ax
+     67
+     68				     Mensaje msj1
+1    69	0007  B4 09		     mov AH,9
+1    70	0009  BA 0000r		     mov DX,OFFSET msj1
+1    71	000C  CD 21		     int 21h
+     72	000E  E8 009F		     call lee
+     73				     Mensaje salto
+1    74	0011  B4 09		     mov AH,9
+1    75	0013  BA 00ECr		     mov DX,OFFSET salto
+1    76	0016  CD 21		     int 21h
+     77
+     78				     Mensaje msj2
+1    79	0018  B4 09		     mov AH,9
+1    80	001A  BA 002Dr		     mov DX,OFFSET msj2
+1    81	001D  CD 21		     int 21h
+     82	001F  E8 00A9		     call lee2
+     83				     Mensaje salto
+1    84	0022  B4 09		     mov AH,9
+1    85	0024  BA 00ECr		     mov DX,OFFSET salto
+1    86	0027  CD 21		     int 21h
+     87
+     88	0029  B8 3D00		     mov ax,3d00h	      ;ABRIR ARCHIVO ORIGINAL SOLO LECTURA
+     89	002C  BA 00F1r		     lea dx,captura+2
+     90	002F  CD 21		     int 21h
+     91	0031  A3 0173r		     mov [manejae],ax
+     92	0034  72 35		     jc	error1
+     93
+     94	0036			     crear:
+     95	0036  B8 3C00		     mov ax,3c00h	     ;CREACION ARCHIVO COPIA
+     96	0039  33 C9		     xor cx,cx
+     97	003B  BA 00FDr		     lea dx,captura2+2
+     98	003E  CD 21		     int 21h
+     99	0040  A3 0175r		     mov [manejas],ax
+    100	0043  72 36		     jc	error2
+    101
+    102	0045			     lectura:
+    103	0045  B4 3F		     mov ah,3fh		     ;LECTURA DEL ARCHVO ORIGINAL
+    104	0047  8B 1E 0173r	     mov bx,[manejae]
+    105	004B  B9 003C		     mov cx,60
+    106	004E  BA 0177r		     mov dx,offset cad
+    107	0051  CD 21		     int 21h
+    108	0053  72 36		     jc	error3
+    109
+    110	0055			     escritura:
+    111	0055  B4 40		     mov ah,40h		     ;ESCRITURA	EN ARCHIVO COPIA
+    112	0057  8B 1E 0175r	     mov bx,[manejas]
+    113	005B  BA 0177r		     mov dx,offset cad
+    114	005E  CD 21		     int 21h
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:30	    Page 3
+coparchi.ASM
+
+
+
+    115	0060  72 39		     jc	error4
+    116
+    117				     Mensaje msjs
+1   118	0062  B4 09		     mov AH,9
+1   119	0064  BA 0051r		     mov DX,OFFSET msjs
+1   120	0067  CD 21		     int 21h
+    121	0069  73 40		     jnc salir
+    122
+    123	006B			     error1:
+    124				     Mensaje msje
+1   125	006B  B4 09		     mov AH,9
+1   126	006D  BA 006Fr		     mov DX,OFFSET msje
+1   127	0070  CD 21		     int 21h
+    128				     Mensaje msje1
+1   129	0072  B4 09		     mov AH,9
+1   130	0074  BA 0082r		     mov DX,OFFSET msje1
+1   131	0077  CD 21		     int 21h
+    132	0079  72 30		     jc	salir
+    133
+    134	007B			     error2:
+    135				     Mensaje msje
+1   136	007B  B4 09		     mov AH,9
+1   137	007D  BA 006Fr		     mov DX,OFFSET msje
+1   138	0080  CD 21		     int 21h
+    139				     Mensaje msje2
+1   140	0082  B4 09		     mov AH,9
+1   141	0084  BA 009Cr		     mov DX,OFFSET msje2
+1   142	0087  CD 21		     int 21h
+    143	0089  72 20		     jc	salir
+    144
+    145	008B			     error3:
+    146				     Mensaje msje
+1   147	008B  B4 09		     mov AH,9
+1   148	008D  BA 006Fr		     mov DX,OFFSET msje
+1   149	0090  CD 21		     int 21h
+    150				     Mensaje msje3
+1   151	0092  B4 09		     mov AH,9
+1   152	0094  BA 00B6r		     mov DX,OFFSET msje3
+1   153	0097  CD 21		     int 21h
+    154	0099  72 10		     jc	salir
+    155
+    156	009B			     error4:
+    157				     Mensaje msje
+1   158	009B  B4 09		     mov AH,9
+1   159	009D  BA 006Fr		     mov DX,OFFSET msje
+1   160	00A0  CD 21		     int 21h
+    161				     Mensaje msje4
+1   162	00A2  B4 09		     mov AH,9
+1   163	00A4  BA 00CFr		     mov DX,OFFSET msje4
+1   164	00A7  CD 21		     int 21h
+    165	00A9  72 00		     jc	salir
+    166
+    167	00AB			     salir:
+    168	00AB  B8 4C00		     mov ax,4c00h
+    169	00AE  CD 21		     int 21h
+    170
+    171				     ;Etiquetas	para capturar cadenas
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:30	    Page 4
+coparchi.ASM
+
+
+
+    172
+    173				      ;captura1
+    174	00B0			      lee:
+    175	00B0  BA 00EFr		      LEA DX,captura		 ; Puntero a la	direccion para la entrada
+    176	00B3  C6 06 00EFr 3C	      MOV BYTE PTR [captura],60	 ; Fijamos los 60 caracteres
+    177	00B8  B4 0A		      MOV AH,10			 ; funcion de entrada de teclado
+    178	00BA  CD 21		      INT 21h			 ; LLamar a la interrupcion del	DOS
+    179	00BC  8A 1E 00F0r	      MOV BL,[captura+1]	 ; Esta	es la longitud efectiva	tecleada
+    180	00C0  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+    181	00C2  81 C3 00EFr	      ADD BX,OFFSET captura	 ; apuntamos al	final
+    182	00C6  C6 47 02 00	      MOV BYTE PTR [BX+2],0	 ; ponemos el cero al final
+    183	00CA  C3		      ret
+    184
+    185				      ;captura2
+    186	00CB			      lee2:
+    187	00CB  BA 00FBr		      LEA DX,captura2		 ; Puntero a la	direccion para la entrada
+    188	00CE  C6 06 00FBr 3C	      MOV BYTE PTR [captura2],60 ; Fijamos los 60 caracteres
+    189	00D3  B4 0A		      MOV AH,10			 ; funcion de entrada de teclado
+    190	00D5  CD 21		      INT 21h			 ; LLamar a la interrupcion del	DOS
+    191	00D7  8A 1E 00FCr	      MOV BL,[captura2+1]	 ; Esta	es la longitud efectiva	tecleada
+    192	00DB  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+    193	00DD  81 C3 00FBr	      ADD BX,OFFSET captura2	 ; apuntamos al	final
+    194	00E1  C6 47 02 00	      MOV BYTE PTR [BX+2],0	; ponemos el cero al final
+    195	00E5  C3		      ret
+    196
+    197				      end inicio
+*Warning* coparchi.ASM(130) Open procedure: _COPARCHI
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:30	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/01/20"
+??FILENAME			  Text	 "coparchi"
+??TIME				  Text	 "16:48:30"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 COPARCHI
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CAD				  Byte	 DGROUP:0177
+CAPTURA				  Byte	 DGROUP:00EF
+CAPTURA2			  Byte	 DGROUP:00FB
+CREAR				  Near	 _TEXT:0036
+ERROR1				  Near	 _TEXT:006B
+ERROR2				  Near	 _TEXT:007B
+ERROR3				  Near	 _TEXT:008B
+ERROR4				  Near	 _TEXT:009B
+ESCRITURA			  Near	 _TEXT:0055
+INICIO				  Near	 _TEXT:0000
+LECTURA				  Near	 _TEXT:0045
+LEE				  Near	 _TEXT:00B0
+LEE2				  Near	 _TEXT:00CB
+MANEJAE				  Word	 DGROUP:0173
+MANEJAS				  Word	 DGROUP:0175
+MSJ1				  Byte	 DGROUP:0000
+MSJ2				  Byte	 DGROUP:002D
+MSJE				  Byte	 DGROUP:006F
+MSJE1				  Byte	 DGROUP:0082
+MSJE2				  Byte	 DGROUP:009C
+MSJE3				  Byte	 DGROUP:00B6
+MSJE4				  Byte	 DGROUP:00CF
+MSJS				  Byte	 DGROUP:0051
+SALIR				  Near	 _TEXT:00AB
+SALTO				  Byte	 DGROUP:00EC
+_COPARCHI (_coparchi)		  Near	 _TEXT:0000
+
+Macro Name
+
+MENSAJE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0400 Para	  Stack	  STACK
+  _DATA				  16  01EF Word	  Public  DATA
+_TEXT				  16  00E6 Word	  Public  CODE
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:30	    Page 6
+Error Summary
+
+
+
+*Warning* coparchi.ASM(130) Open procedure: _COPARCHI
+

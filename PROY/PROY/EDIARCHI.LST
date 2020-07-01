@@ -1,0 +1,214 @@
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:30	    Page 1
+ediarchi.ASM
+
+
+
+      1	0000			     .MODEL SMALL
+      2	0000			     .STACK
+      3	0000			     .DATA
+      4
+      5				      ;variables
+      6	0000  44 49 47 49 54 45	20+   msj1 db "DIGITE EL NOMBRE	DEL ARCHIVO:","$";
+      7	      45 4C 20 4E 4F 4D	42+
+      8	      52 45 20 44 45 4C	20+
+      9	      41 52 43 48 49 56	4F+
+     10	      3A 24
+     11	001E  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     12	0023  44 49 47 49 54 45	20+   msj2 db "DIGITE TEXTO:","$";
+     13	      54 45 58 54 4F 3A	24
+     14	0031  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     15	0036  41 52 43 48 49 56	4F+   msj3 db "ARCHIVO MODIFICADO EXITOSAMENTE $";
+     16	      20 4D 4F 44 49 46	49+
+     17	      43 41 44 4F 20 45	58+
+     18	      49 54 4F 53 41 4D	45+
+     19	      4E 54 45 20 24
+     20	0057  4F 50 45 52 41 43	49+   msje db "OPERACION FALLIDA $";
+     21	      4F 4E 20 46 41 4C	4C+
+     22	      49 44 41 20 24
+     23	006A  0D 0A 24		      salto DB 13,10,'$'
+     24	006D  3C*(00)		      captura DB 60 DUP	(0)
+     25	00A9  3C*(00)		      captura2 DB 60 DUP (0)
+     26	00E5  ????		      maneja dw	?
+     27
+     28	00E7			     .code
+     29
+     30				     Mensaje MACRO texto
+     31				     mov AH,9
+     32				     mov DX,OFFSET texto
+     33				     int 21h
+     34				     ENDM
+     35
+     36				     public _ediarchi
+     37	0000			     _ediarchi proc
+     38	0000			     inicio:
+     39	0000  B8 0000s		     mov AX,@DATA
+     40	0003  8E D8		     mov DS,AX
+     41
+     42				     Mensaje msj1
+1    43	0005  B4 09		     mov AH,9
+1    44	0007  BA 0000r		     mov DX,OFFSET msj1
+1    45	000A  CD 21		     int 21h
+     46	000C  E8 0075		     call lee
+     47				     Mensaje salto
+1    48	000F  B4 09		     mov AH,9
+1    49	0011  BA 006Ar		     mov DX,OFFSET salto
+1    50	0014  CD 21		     int 21h
+     51
+     52				     Mensaje msj2
+1    53	0016  B4 09		     mov AH,9
+1    54	0018  BA 0023r		     mov DX,OFFSET msj2
+1    55	001B  CD 21		     int 21h
+     56	001D  E8 007F		     call lee2
+     57				     Mensaje salto
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:30	    Page 2
+ediarchi.ASM
+
+
+
+1    58	0020  B4 09		     mov AH,9
+1    59	0022  BA 006Ar		     mov DX,OFFSET salto
+1    60	0025  CD 21		     int 21h
+     61
+     62				     ;abrir el archivo
+     63	0027  B8 3D02		     mov ax,3d02h ;
+     64	002A  33 C9		     xor CX,cx ;
+     65	002C  BA 006Fr		     LEA dx,captura+2
+     66	002F  CD 21		     int 21h
+     67	0031  A3 00E5r		     mov maneja,ax		;Handle
+     68	0034  B9 0001		     mov cx,1
+     69	0037  72 31		     jc	error
+     70
+     71	0039			     editar:
+     72	0039  51		     push cx
+     73	003A  B4 40		     mov ah,40h
+     74	003C  8B 1E 00E5r	     mov bx,maneja
+     75	0040  B9 003C		     mov cx,60
+     76	0043  BA 00ABr		     lea dx,captura2+2		 ;texto
+     77	0046  CD 21		     int 21h
+     78	0048  59		     pop cx
+     79	0049  E2 EE		     loop editar
+     80	004B  B4 3E		     mov ah,3eh			 ;CIERRE DE ARCHIVO
+     81	004D  8B 1E 00E5r	     mov bx,maneja
+     82	0051  CD 21		     int 21h
+     83	0053  72 15		     jc	error
+     84
+     85				     Mensaje salto
+1    86	0055  B4 09		     mov AH,9
+1    87	0057  BA 006Ar		     mov DX,OFFSET salto
+1    88	005A  CD 21		     int 21h
+     89				     Mensaje msj3
+1    90	005C  B4 09		     mov AH,9
+1    91	005E  BA 0036r		     mov DX,OFFSET msj3
+1    92	0061  CD 21		     int 21h
+     93				     Mensaje salto
+1    94	0063  B4 09		     mov AH,9
+1    95	0065  BA 006Ar		     mov DX,OFFSET salto
+1    96	0068  CD 21		     int 21h
+     97
+     98	006A			     error:
+     99				     Mensaje salto
+1   100	006A  B4 09		     mov AH,9
+1   101	006C  BA 006Ar		     mov DX,OFFSET salto
+1   102	006F  CD 21		     int 21h
+    103				     Mensaje msje
+1   104	0071  B4 09		     mov AH,9
+1   105	0073  BA 0057r		     mov DX,OFFSET msje
+1   106	0076  CD 21		     int 21h
+    107				     Mensaje salto
+1   108	0078  B4 09		     mov AH,9
+1   109	007A  BA 006Ar		     mov DX,OFFSET salto
+1   110	007D  CD 21		     int 21h
+    111
+    112	007F			     salir:
+    113	007F  B8 4C00		     mov ax,4c00h
+    114	0082  CD 21		     int 21h
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:30	    Page 3
+ediarchi.ASM
+
+
+
+    115
+    116				      ;Etiquetas para capturar cadenas
+    117
+    118				      ;captura1
+    119	0084			      lee:
+    120	0084  BA 006Dr		      LEA DX,captura		 ; Puntero a la	direccion para la entrada
+    121	0087  C6 06 006Dr 3C	      MOV BYTE PTR [captura],60	 ; Fijamos los 60 caracteres
+    122	008C  B4 0A		      MOV AH,10			 ; funcion de entrada de teclado
+    123	008E  CD 21		      INT 21h			 ; LLamar a la interrupcion del	DOS
+    124	0090  8A 1E 006Er	      MOV BL,[captura+1]	 ; Esta	es la longitud efectiva	tecleada
+    125	0094  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+    126	0096  81 C3 006Dr	      ADD BX,OFFSET captura	 ; apuntamos al	final
+    127	009A  C6 47 02 00	      MOV BYTE PTR [BX+2],0	 ; ponemos el cero al final
+    128	009E  C3		      ret
+    129
+    130				      ;captura2
+    131	009F			      lee2:
+    132	009F  BA 00A9r		      LEA DX,captura2		 ; Puntero a la	dirección para	la entrada
+    133	00A2  C6 06 00A9r 3C	      MOV BYTE PTR [captura2],60 ; Fijamos los 60 caracteres
+    134	00A7  B4 0A		      MOV AH,10			 ; función de entrada de teclado
+    135	00A9  CD 21		      INT 21h			 ; LLamar a la interrupción del DOS
+    136	00AB  8A 1E 00AAr	      MOV BL,[captura2+1]	 ; Esta	es la longitud efectiva	tecleada
+    137	00AF  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+    138	00B1  81 C3 00A9r	      ADD BX,OFFSET captura2	 ; apuntamos al	final
+    139	00B5  C6 47 02 00	      MOV BYTE PTR [BX+2],0	 ; ponemos el cero al final
+    140	00B9  C3		      ret
+    141				      end inicio
+*Warning* ediarchi.ASM(100) Open procedure: _EDIARCHI
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:30	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/01/20"
+??FILENAME			  Text	 "ediarchi"
+??TIME				  Text	 "16:49:30"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 EDIARCHI
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CAPTURA				  Byte	 DGROUP:006D
+CAPTURA2			  Byte	 DGROUP:00A9
+EDITAR				  Near	 _TEXT:0039
+ERROR				  Near	 _TEXT:006A
+INICIO				  Near	 _TEXT:0000
+LEE				  Near	 _TEXT:0084
+LEE2				  Near	 _TEXT:009F
+MANEJA				  Word	 DGROUP:00E5
+MSJ1				  Byte	 DGROUP:0000
+MSJ2				  Byte	 DGROUP:0023
+MSJ3				  Byte	 DGROUP:0036
+MSJE				  Byte	 DGROUP:0057
+SALIR				  Near	 _TEXT:007F
+SALTO				  Byte	 DGROUP:006A
+_EDIARCHI (_ediarchi)		  Near	 _TEXT:0000
+
+Macro Name
+
+MENSAJE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0400 Para	  Stack	  STACK
+  _DATA				  16  00E7 Word	  Public  DATA
+_TEXT				  16  00BA Word	  Public  CODE
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:30	    Page 5
+Error Summary
+
+
+
+*Warning* ediarchi.ASM(100) Open procedure: _EDIARCHI
+

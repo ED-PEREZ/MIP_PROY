@@ -1,0 +1,149 @@
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:40	    Page 1
+crearchi.ASM
+
+
+
+      1	0000			     .MODEL SMALL
+      2	0000			     .STACK
+      3	0000			     .DATA
+      4				      ;variables
+      5	0000  44 49 47 49 54 45	20+   msj1 db "DIGITE EL NOMBRE	DEL ARCHIVO:","$";
+      6	      45 4C 20 4E 4F 4D	42+
+      7	      52 45 20 44 45 4C	20+
+      8	      41 52 43 48 49 56	4F+
+      9	      3A 24
+     10	001E  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     11	0023  44 49 47 49 54 45	20+   msj2 db "DIGITE TEXTO:","$";
+     12	      54 45 58 54 4F 3A	24
+     13	0031  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     14	0036  0D 0A 24		      salto DB 13,10,'$'
+     15	0039  3C*(00)		      captura DB 60 DUP	(0)
+     16	0075  3C*(00)		      captura2 DB 60 DUP (0)
+     17	00B1  ????		      maneja dw	?
+     18
+     19	00B3			     .code
+     20				     public _crearchi
+     21	0000			     _crearchi proc
+     22	0000			     inicio:
+     23	0000  B8 0000s		      MOV AX,@DATA
+     24	0003  8E D8		      MOV DS,AX
+     25	0005  B4 09		      mov ah,09h
+     26	0007  BA 0000r		      mov dx,offset msj1
+     27	000A  CD 21		      int 21h
+     28	000C  E8 0046		      call lee
+     29	000F  B4 09		      mov ah,09h
+     30	0011  BA 0036r		      mov dx,offset salto
+     31	0014  CD 21		      int 21h
+     32	0016  B4 09		      mov ah,09h
+     33	0018  BA 0036r		      mov dx,offset salto
+     34	001B  CD 21		      int 21h
+     35
+     36	001D  B4 09		      mov ah,09h
+     37	001F  BA 0023r		      mov dx,offset msj2
+     38	0022  CD 21		      int 21h
+     39	0024  E8 0049		      call lee2
+     40				     ;crear archivo
+     41	0027  B4 3C		      mov ah,3ch ;
+     42	0029  33 C9		      xor CX,cx	;
+     43	002B  BA 003Br		      LEA dx, captura+2
+     44	002E  CD 21		      int 21h
+     45	0030  A3 00B1r		      mov maneja,ax		 ;Handle
+     46	0033  B9 0001		      mov cx,1
+     47	0036			     nuevo:
+     48	0036  51		     push cx
+     49	0037  B4 40		     mov ah,40h
+     50	0039  8B 1E 00B1r	     mov bx,maneja
+     51	003D  B9 003C		     mov cx,60
+     52	0040  BA 0075r		     lea dx,captura2		 ;texto
+     53	0043  CD 21		     int 21h
+     54	0045  59		     pop cx
+     55	0046  E2 EE		     loop nuevo
+     56	0048  B4 3E		     mov ah,3eh
+     57	004A  8B 1E 00B1r	     mov bx,maneja
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:40	    Page 2
+crearchi.ASM
+
+
+
+     58	004E  CD 21		     int 21h
+     59
+     60	0050			      salir:
+     61	0050  B8 4C00		      mov ax,4c00h
+     62	0053  CD 21		      int 21h
+     63
+     64				      ;Etiquetas para capturar cadenas
+     65
+     66				      ;captura1
+     67	0055			      lee:
+     68	0055  BA 0039r		      LEA DX,captura		 ; Puntero a la	direccion para la entrada
+     69	0058  C6 06 0039r 3C	      MOV BYTE PTR [captura],60	 ; Fijamos los 60 caracteres
+     70	005D  B4 0A		      MOV AH,10			 ; funcion de entrada de teclado
+     71	005F  CD 21		      INT 21h			 ; LLamar a la interrupcion del	DOS
+     72	0061  8A 1E 003Ar	      MOV BL,[captura+1]	 ; Esta	es la longitud efectiva	tecleada
+     73	0065  B7 00		      MOV BH,0			 ; ; cargada nuestra direccion
+     74	0067  81 C3 0039r	      ADD BX,OFFSET captura	 ; apuntamos al	final
+     75	006B  C6 47 02 00	      MOV BYTE PTR [BX+2],0	 ; ponemos el cero al final
+     76	006F  C3		      ret
+     77				      ;captura2
+     78	0070			      lee2:
+     79	0070  BA 0075r		      LEA DX,captura2		 ; Puntero a la	dirección para	la entrada
+     80	0073  C6 06 0075r 3C	      MOV BYTE PTR [captura2],60 ; Fijamos los 60 caracteres
+     81	0078  B4 0A		      MOV AH,10			 ; función de entrada de teclado
+     82	007A  CD 21		      INT 21h			 ; LLamar a la interrupción del DOS
+     83	007C  8A 1E 0076r	      MOV BL,[captura2+1]	 ; Esta	es la longitud efectiva	tecleada
+     84	0080  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+     85	0082  81 C3 0075r	      ADD BX,OFFSET captura2	 ; apuntamos al	final
+     86	0086  C6 47 02 00	      MOV BYTE PTR [BX+2],0	 ; ponemos el cero al final
+     87	008A  C3		      ret
+     88				      end inicio
+*Warning* crearchi.ASM(83) Open	procedure: _CREARCHI
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:40	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/01/20"
+??FILENAME			  Text	 "crearchi"
+??TIME				  Text	 "16:48:40"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 CREARCHI
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CAPTURA				  Byte	 DGROUP:0039
+CAPTURA2			  Byte	 DGROUP:0075
+INICIO				  Near	 _TEXT:0000
+LEE				  Near	 _TEXT:0055
+LEE2				  Near	 _TEXT:0070
+MANEJA				  Word	 DGROUP:00B1
+MSJ1				  Byte	 DGROUP:0000
+MSJ2				  Byte	 DGROUP:0023
+NUEVO				  Near	 _TEXT:0036
+SALIR				  Near	 _TEXT:0050
+SALTO				  Byte	 DGROUP:0036
+_CREARCHI (_crearchi)		  Near	 _TEXT:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0400 Para	  Stack	  STACK
+  _DATA				  16  00B3 Word	  Public  DATA
+_TEXT				  16  008B Word	  Public  CODE
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:40	    Page 4
+Error Summary
+
+
+
+*Warning* crearchi.ASM(83) Open	procedure: _CREARCHI
+

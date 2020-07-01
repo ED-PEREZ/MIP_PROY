@@ -1,5 +1,5 @@
 .MODEL SMALL
-.STACK
+.STACK 100h
 .DATA
  ;variables
  msj1 db "DIGITE LA DIRECCION DEL ARCHIVO A MOVER: ","$";
@@ -9,8 +9,10 @@
  msjs db "ARCHIVO MOVIDO EXITOSAMENTE $";
  msje db "OPERACION FALLIDA$";
  salto DB 13,10,'$'
- captura DB 60 DUP (0)
- captura2 DB 60 DUP (0)
+ captura DB 120 DUP (0)
+ captura2 DB 120 DUP (0)
+ file DB 'P1.TXT',0;
+ nomb DB 'p/p3.txt',0
  manejae dw ?
  manejas dw ?
  cad db 120 DUP (?)
@@ -28,7 +30,7 @@ _movarchi proc
 
 inicio:
 mov ax,@DATA
-mov ds,ax  
+mov ds,ax 
 mov es,ax
 
 Mensaje msj1
@@ -39,27 +41,30 @@ Mensaje msj2
 call lee2
 Mensaje salto 
                                        
+lea dx,captura+2
+lea di,captura2+2
 mov ah,56h
-lea dx,captura
-lea di,captura2
 int 21h
-jnz error
+jc error
 
 Mensaje msjs
 Mensaje salto
+jnc salir 
 
 error:
 Mensaje msje
 Mensaje salto
 
-.exit
+salir:
+mov ax,4c00h
+int 21h
 
 ;Etiquetas para capturar cadenas
 
  ;captura1
  lee:
  LEA DX,captura             ; Puntero a la direccion para la entrada
- MOV BYTE PTR [captura],60  ; Fijamos los 60 caracteres
+ MOV BYTE PTR [captura],120  ; Fijamos los 60 caracteres
  MOV AH,10                  ; funcion de entrada de teclado
  INT 21h                    ; LLamar a la interrupcion del DOS
  MOV BL,[captura+1]         ; Esta es la longitud efectiva tecleada
@@ -71,7 +76,7 @@ Mensaje salto
  ;captura2
  lee2:
  LEA DX,captura2            ; Puntero a la direccion para la entrada
- MOV BYTE PTR [captura2],60 ; Fijamos los 60 caracteres
+ MOV BYTE PTR [captura2],120 ; Fijamos los 60 caracteres
  MOV AH,10                  ; funcion de entrada de teclado
  INT 21h                    ; LLamar a la interrupcion del DOS
  MOV BL,[captura2+1]        ; Esta es la longitud efectiva tecleada

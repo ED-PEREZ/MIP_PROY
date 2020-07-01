@@ -1,0 +1,205 @@
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:46	    Page 1
+movarchi.ASM
+
+
+
+      1	0000			     .MODEL SMALL
+      2	0000			     .STACK 100h
+      3	0000			     .DATA
+      4				      ;variables
+      5	0000  44 49 47 49 54 45	20+   msj1 db "DIGITE LA DIRECCION DEL ARCHIVO A MOVER:	","$";
+      6	      4C 41 20 44 49 52	45+
+      7	      43 43 49 4F 4E 20	44+
+      8	      45 4C 20 41 52 43	48+
+      9	      49 56 4F 20 41 20	4D+
+     10	      4F 56 45 52 3A 20	24
+     11	002A  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     12	002F  44 49 47 49 54 45	20+   msj2 db "DIGITE LA NUEVA DIRECCION DEL ARCHIVO: ","$";
+     13	      4C 41 20 4E 55 45	56+
+     14	      41 20 44 49 52 45	43+
+     15	      43 49 4F 4E 20 44	45+
+     16	      4C 20 41 52 43 48	49+
+     17	      56 4F 3A 20 24
+     18	0057  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     19	005C  41 52 43 48 49 56	4F+   msjs db "ARCHIVO MOVIDO EXITOSAMENTE $";
+     20	      20 4D 4F 56 49 44	4F+
+     21	      20 45 58 49 54 4F	53+
+     22	      41 4D 45 4E 54 45	20+
+     23	      24
+     24	0079  4F 50 45 52 41 43	49+   msje db "OPERACION FALLIDA$";
+     25	      4F 4E 20 46 41 4C	4C+
+     26	      49 44 41 24
+     27	008B  0D 0A 24		      salto DB 13,10,'$'
+     28	008E  78*(00)		      captura DB 120 DUP (0)
+     29	0106  78*(00)		      captura2 DB 120 DUP (0)
+     30	017E  50 31 2E 54 58 54	00    file DB 'P1.TXT',0;
+     31	0185  70 2F 70 33 2E 74	78+   nomb DB 'p/p3.txt',0
+     32	      74 00
+     33	018E  ????		      manejae dw ?
+     34	0190  ????		      manejas dw ?
+     35	0192  78*(??)		      cad db 120 DUP (?)
+     36
+     37	020A			     .code
+     38
+     39				     Mensaje MACRO texto
+     40				     mov AH,9
+     41				     mov DX,OFFSET texto
+     42				     int 21h
+     43				     ENDM
+     44
+     45				     public _movarchi
+     46	0000			     _movarchi proc
+     47
+     48	0000			     inicio:
+     49	0000  B8 0000s		     mov ax,@DATA
+     50	0003  8E D8		     mov ds,ax
+     51	0005  8E C0		     mov es,ax
+     52
+     53				     Mensaje msj1
+1    54	0007  B4 09		     mov AH,9
+1    55	0009  BA 0000r		     mov DX,OFFSET msj1
+1    56	000C  CD 21		     int 21h
+     57	000E  E8 0047		     call lee
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:46	    Page 2
+movarchi.ASM
+
+
+
+     58				     Mensaje salto
+1    59	0011  B4 09		     mov AH,9
+1    60	0013  BA 008Br		     mov DX,OFFSET salto
+1    61	0016  CD 21		     int 21h
+     62
+     63				     Mensaje msj2
+1    64	0018  B4 09		     mov AH,9
+1    65	001A  BA 002Fr		     mov DX,OFFSET msj2
+1    66	001D  CD 21		     int 21h
+     67	001F  E8 0051		     call lee2
+     68				     Mensaje salto
+1    69	0022  B4 09		     mov AH,9
+1    70	0024  BA 008Br		     mov DX,OFFSET salto
+1    71	0027  CD 21		     int 21h
+     72
+     73	0029  BA 0090r		     lea dx,captura+2
+     74	002C  BF 0108r		     lea di,captura2+2
+     75	002F  B4 56		     mov ah,56h
+     76	0031  CD 21		     int 21h
+     77	0033  72 10		     jc	error
+     78
+     79				     Mensaje msjs
+1    80	0035  B4 09		     mov AH,9
+1    81	0037  BA 005Cr		     mov DX,OFFSET msjs
+1    82	003A  CD 21		     int 21h
+     83				     Mensaje salto
+1    84	003C  B4 09		     mov AH,9
+1    85	003E  BA 008Br		     mov DX,OFFSET salto
+1    86	0041  CD 21		     int 21h
+     87	0043  73 0E		     jnc salir
+     88
+     89	0045			     error:
+     90				     Mensaje msje
+1    91	0045  B4 09		     mov AH,9
+1    92	0047  BA 0079r		     mov DX,OFFSET msje
+1    93	004A  CD 21		     int 21h
+     94				     Mensaje salto
+1    95	004C  B4 09		     mov AH,9
+1    96	004E  BA 008Br		     mov DX,OFFSET salto
+1    97	0051  CD 21		     int 21h
+     98
+     99	0053			     salir:
+    100	0053  B8 4C00		     mov ax,4c00h
+    101	0056  CD 21		     int 21h
+    102
+    103				     ;Etiquetas	para capturar cadenas
+    104
+    105				      ;captura1
+    106	0058			      lee:
+    107	0058  BA 008Er		      LEA DX,captura		 ; Puntero a la	direccion para la entrada
+    108	005B  C6 06 008Er 78	      MOV BYTE PTR [captura],120  ; Fijamos los	60 caracteres
+    109	0060  B4 0A		      MOV AH,10			 ; funcion de entrada de teclado
+    110	0062  CD 21		      INT 21h			 ; LLamar a la interrupcion del	DOS
+    111	0064  8A 1E 008Fr	      MOV BL,[captura+1]	 ; Esta	es la longitud efectiva	tecleada
+    112	0068  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+    113	006A  81 C3 008Er	      ADD BX,OFFSET captura	 ; apuntamos al	final
+    114	006E  C6 47 02 00	      MOV BYTE PTR [BX+2],0	 ; ponemos el cero al final
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:46	    Page 3
+movarchi.ASM
+
+
+
+    115	0072  C3		      ret
+    116
+    117				      ;captura2
+    118	0073			      lee2:
+    119	0073  BA 0106r		      LEA DX,captura2		 ; Puntero a la	direccion para la entrada
+    120	0076  C6 06 0106r 78	      MOV BYTE PTR [captura2],120 ; Fijamos los	60 caracteres
+    121	007B  B4 0A		      MOV AH,10			 ; funcion de entrada de teclado
+    122	007D  CD 21		      INT 21h			 ; LLamar a la interrupcion del	DOS
+    123	007F  8A 1E 0107r	      MOV BL,[captura2+1]	 ; Esta	es la longitud efectiva	tecleada
+    124	0083  B7 00		      MOV BH,0			 ; cargada nuestra direccion
+    125	0085  81 C3 0106r	      ADD BX,OFFSET captura2	 ; apuntamos al	final
+    126	0089  C6 47 02 00	      MOV BYTE PTR [BX+2],0	; ponemos el cero al final
+    127	008D  C3		      ret
+    128
+    129				      end inicio
+*Warning* movarchi.ASM(88) Open	procedure: _MOVARCHI
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:46	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/01/20"
+??FILENAME			  Text	 "movarchi"
+??TIME				  Text	 "16:49:46"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MOVARCHI
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CAD				  Byte	 DGROUP:0192
+CAPTURA				  Byte	 DGROUP:008E
+CAPTURA2			  Byte	 DGROUP:0106
+ERROR				  Near	 _TEXT:0045
+FILE				  Byte	 DGROUP:017E
+INICIO				  Near	 _TEXT:0000
+LEE				  Near	 _TEXT:0058
+LEE2				  Near	 _TEXT:0073
+MANEJAE				  Word	 DGROUP:018E
+MANEJAS				  Word	 DGROUP:0190
+MSJ1				  Byte	 DGROUP:0000
+MSJ2				  Byte	 DGROUP:002F
+MSJE				  Byte	 DGROUP:0079
+MSJS				  Byte	 DGROUP:005C
+NOMB				  Byte	 DGROUP:0185
+SALIR				  Near	 _TEXT:0053
+SALTO				  Byte	 DGROUP:008B
+_MOVARCHI (_movarchi)		  Near	 _TEXT:0000
+
+Macro Name
+
+MENSAJE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  020A Word	  Public  DATA
+_TEXT				  16  008E Word	  Public  CODE
+Turbo Assembler	 Version 3.1	    07/01/20 16:49:46	    Page 5
+Error Summary
+
+
+
+*Warning* movarchi.ASM(88) Open	procedure: _MOVARCHI
+

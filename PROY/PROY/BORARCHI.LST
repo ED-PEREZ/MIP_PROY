@@ -1,0 +1,155 @@
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:18	    Page 1
+borarchi.ASM
+
+
+
+      1	0000			     .MODEL SMALL
+      2
+      3	0000			     .STACK
+      4
+      5	0000			     .DATA
+      6				      ;variables
+      7	0000  44 49 47 49 54 45	20+   msj1 db "DIGITE EL NOMBRE	DEL ARCHIVO:","$";
+      8	      45 4C 20 4E 4F 4D	42+
+      9	      52 45 20 44 45 4C	20+
+     10	      41 52 43 48 49 56	4F+
+     11	      3A 24
+     12	001E  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     13	0023  41 52 43 48 49 56	4F+   msjs db "ARCHIVO ELIMINADO EXITOSAMENTE","$";
+     14	      20 45 4C 49 4D 49	4E+
+     15	      41 44 4F 20 45 58	49+
+     16	      54 4F 53 41 4D 45	4E+
+     17	      54 45 24
+     18	0042  4F 50 45 52 41 43	49+   msje db "OPERACION FALLIDA$";
+     19	      4F 4E 20 46 41 4C	4C+
+     20	      49 44 41 24
+     21	0054  0D 0A 0D 0A 24	      db 13,10,13,10,"$"
+     22	0059  0D 0A 24		      salto DB 13,10,'$'
+     23	005C  3C*(00)		      captura DB 60 DUP	(0)
+     24	0098  ????		      maneja dw	?
+     25
+     26	009A			     .code
+     27
+     28				     Mensaje MACRO texto
+     29				     mov AH,9
+     30				     mov DX,OFFSET texto
+     31				     int 21h
+     32				     ENDM
+     33
+     34				     public _borarchi
+     35	0000			     _borarchi proc
+     36	0000			     inicio:
+     37	0000  B8 0000s		      mov AX,@DATA
+     38	0003  8E D8		      mov DS,AX
+     39
+     40				     Mensaje msj1
+1    41	0005  B4 09		     mov AH,9
+1    42	0007  BA 0000r		     mov DX,OFFSET msj1
+1    43	000A  CD 21		     int 21h
+     44	000C  E8 0033		     call lee
+     45				     Mensaje salto
+1    46	000F  B4 09		     mov AH,9
+1    47	0011  BA 0059r		     mov DX,OFFSET salto
+1    48	0014  CD 21		     int 21h
+     49
+     50				     ;borrar archivo
+     51	0016  B4 41		     mov ah,41h	;
+     52	0018  BA 005Er		     LEA dx, captura+2
+     53	001B  CD 21		     int 21h
+     54	001D  72 10		     jc	error
+     55
+     56				     Mensaje msjs
+1    57	001F  B4 09		     mov AH,9
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:18	    Page 2
+borarchi.ASM
+
+
+
+1    58	0021  BA 0023r		     mov DX,OFFSET msjs
+1    59	0024  CD 21		     int 21h
+     60				     Mensaje salto
+1    61	0026  B4 09		     mov AH,9
+1    62	0028  BA 0059r		     mov DX,OFFSET salto
+1    63	002B  CD 21		     int 21h
+     64	002D  73 0E		     jnc salir
+     65
+     66	002F			     error:
+     67				     Mensaje msje
+1    68	002F  B4 09		     mov AH,9
+1    69	0031  BA 0042r		     mov DX,OFFSET msje
+1    70	0034  CD 21		     int 21h
+     71				     Mensaje salto
+1    72	0036  B4 09		     mov AH,9
+1    73	0038  BA 0059r		     mov DX,OFFSET salto
+1    74	003B  CD 21		     int 21h
+     75
+     76	003D			     salir:
+     77	003D  B8 4C00		     mov ax,4c00h
+     78	0040  CD 21		     int 21h
+     79
+     80				     ;captura1
+     81	0042			      lee:
+     82	0042  BA 005Cr		      LEA DX,captura		 ; Puntero a la	direccion para la entrada
+     83	0045  C6 06 005Cr 3C	      mov BYTE PTR [captura],60	 ; Fijamos los 60 caracteres
+     84	004A  B4 0A		      mov AH,10			 ; funcion de entrada de teclado
+     85	004C  CD 21		      INT 21h			 ; Llamar a la interrupcion del	DOS
+     86	004E  8A 1E 005Dr	      mov BL,[captura+1]	 ; Esta	es la longitud efectiva	tecleada
+     87	0052  B7 00		      mov BH,0			 ; cargada nuestra direccion
+     88	0054  81 C3 005Cr	      ADD BX,OFFSET captura	 ; apuntamos al	final
+     89	0058  C6 47 02 00	      mov BYTE PTR [BX+2],0	 ; ponemos el cero al final
+     90	005C  C3		      ret
+     91				      end inicio
+*Warning* borarchi.ASM(63) Open	procedure: _BORARCHI
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:18	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/01/20"
+??FILENAME			  Text	 "borarchi"
+??TIME				  Text	 "16:48:18"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 BORARCHI
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CAPTURA				  Byte	 DGROUP:005C
+ERROR				  Near	 _TEXT:002F
+INICIO				  Near	 _TEXT:0000
+LEE				  Near	 _TEXT:0042
+MANEJA				  Word	 DGROUP:0098
+MSJ1				  Byte	 DGROUP:0000
+MSJE				  Byte	 DGROUP:0042
+MSJS				  Byte	 DGROUP:0023
+SALIR				  Near	 _TEXT:003D
+SALTO				  Byte	 DGROUP:0059
+_BORARCHI (_borarchi)		  Near	 _TEXT:0000
+
+Macro Name
+
+MENSAJE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0400 Para	  Stack	  STACK
+  _DATA				  16  009A Word	  Public  DATA
+_TEXT				  16  005D Word	  Public  CODE
+Turbo Assembler	 Version 3.1	    07/01/20 16:48:18	    Page 4
+Error Summary
+
+
+
+*Warning* borarchi.ASM(63) Open	procedure: _BORARCHI
+

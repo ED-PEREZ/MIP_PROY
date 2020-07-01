@@ -8,6 +8,7 @@
  msj2 db "DIGITE TEXTO:","$";
  db 13,10,13,10,"$"
  msj3 db "ARCHIVO MODIFICADO EXITOSAMENTE $";
+ msje db "OPERACION FALLIDA $";
  salto DB 13,10,'$'
  captura DB 60 DUP (0)
  captura2 DB 60 DUP (0)
@@ -42,6 +43,7 @@ LEA dx,captura+2
 int 21h
 mov maneja,ax              ;Handle
 mov cx,1
+jc error
 
 editar: 
 push cx
@@ -55,9 +57,15 @@ loop editar
 mov ah,3eh                  ;CIERRE DE ARCHIVO
 mov bx,maneja
 int 21h
+jc error
 
 Mensaje salto
 Mensaje msj3
+Mensaje salto
+
+error:
+Mensaje salto
+Mensaje msje
 Mensaje salto
 
 salir:

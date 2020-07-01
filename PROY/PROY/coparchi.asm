@@ -7,10 +7,16 @@
  msj2 db "DIGITE EL NOMBRE DE LA COPIA: ","$";
  db 13,10,13,10,"$"
  msjs db "ARCHIVO COPIADO EXITOSAMENTE $";
- msje db "OPERACION FALLIDA$";
+ msje db "OPERACION FALLIDA $";
+
+msje1 db "-> ERROR EN ABRIR ARCHIVO$";
+msje2 db "-> ERROR EN CREAR ARCHIVO$";
+msje3 db "-> ERROR EN LEER ARCHIVO$";
+msje4 db "-> ERROR EN ESCRIBIR ARCHIVO$";
+
  salto DB 13,10,'$'
- captura DB 60 DUP (0)
- captura2 DB 60 DUP (0)
+ captura DB 12 DUP (0)
+ captura2 DB 120 DUP (0)
  manejae dw ?
  manejas dw ?
  cad db 120 DUP (?)
@@ -35,37 +41,61 @@ Mensaje msj1
 call lee
 Mensaje salto
 
-
 Mensaje msj2
 call lee2
 Mensaje salto 
                                        
-
-mov ax,3d00h                  ;apertura archivo origen         
-mov dx,offset captura
+mov ax,3d00h             ;ABRIR ARCHIVO ORIGINAL SOLO LECTURA        
+lea dx,captura+2
 int 21h
 mov [manejae],ax
+jc error1
 
-
-mov ax,3c00h              ;Creamos archivo destino
+crear:
+mov ax,3c00h            ;CREACION ARCHIVO COPIA
 xor cx,cx
-mov dx,offset captura2
+lea dx,captura2+2
 int 21h
-mov [manejas],ax    
+mov [manejas],ax   
+jc error2
 
-mov ah,3fh              ;LECTURA DEL FICHERO
+lectura:
+mov ah,3fh              ;LECTURA DEL ARCHVO ORIGINAL
 mov bx,[manejae]
 mov cx,60
 mov dx,offset cad
 int 21h 
+jc error3 
 
-push ax                 ;guardar bytes leidos
-
-mov cx,cx               ;escribir los bytes leídos
-mov ah,40h
+escritura:
+mov ah,40h              ;ESCRITURA EN ARCHIVO COPIA
 mov bx,[manejas]
 mov dx,offset cad
 int 21h
+jc error4 
+
+Mensaje msjs
+jnc salir
+
+error1:
+Mensaje msje
+Mensaje msje1
+jc salir
+
+error2:
+Mensaje msje
+Mensaje msje2
+jc salir
+
+error3:
+Mensaje msje
+Mensaje msje3
+jc salir
+
+error4:
+Mensaje msje
+Mensaje msje4
+jc salir
 
 salir:
 mov ax,4c00h
