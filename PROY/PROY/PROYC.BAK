@@ -6,7 +6,8 @@ void libre();
 void main()
 {
     char opc;
-    system("color 70");
+    system("color bd");
+    textcolor(4);
     do
     {
         system("cls");
@@ -71,7 +72,7 @@ void fichero()
         }
         case '2':
         {
-            borradir();
+            crearchi();
             break;
         }
         case '3':
@@ -121,4 +122,3 @@ void libre(){
     printf("EL LIBRE ESTA EN PROCESO");
     system("pause>0");
 }
-
