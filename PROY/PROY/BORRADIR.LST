@@ -1,0 +1,193 @@
+Turbo Assembler	 Version 3.1	    07/03/20 22:40:11	    Page 1
+BORRADIR.ASM
+
+
+
+      1				     ; Programa	ejemplo: similar al type, mostrar un archivo en	pantalla
+      2				     ;
+      3	0000			     .model small
+      4	0000			     .stack 100h
+      5	0000			     .data
+      6
+      7	0000  0D 0A 20 49 4E 47	52+  men    DB	  13,10," INGRESE El NOMBRE DE LA CARPETA A ELIMINAR: $"
+      8	      45 53 45 20 45 6C	20+
+      9	      4E 4F 4D 42 52 45	20+
+     10	      44 45 20 4C 41 20	43+
+     11	      41 52 50 45 54 41	20+
+     12	      41 20 45 4C 49 4D	49+
+     13	      4E 41 52 3A 20 24
+     14	0030  50*(00)		     Nombre  DB	   80 DUP (0)	     ; BufferLeerDisco para leer desde el teclado
+     15
+     16	0080  0D 0A 20 43 41 52	50+  mensaje1 db 13,10,	" CARPETA ELIMINADA EXITOSAMENTE ", "$"
+     17	      45 54 41 20 45 4C	49+
+     18	      4D 49 4E 41 44 41	20+
+     19	      45 58 49 54 4F 53	41+
+     20	      4D 45 4E 54 45 20	24
+     21	00A3  0D 0A 20 50 52 45	53+  salirmsj db 13,10,	" PRESIONE UNA TECLA PARA CONTINUAR ", "$"
+     22	      49 4F 4E 45 20 55	4E+
+     23	      41 20 54 45 43 4C	41+
+     24	      20 50 41 52 41 20	43+
+     25	      4F 4E 54 49 4E 55	41+
+     26	      52 20 24
+     27	00C9  0D 0A 20 45 52 52	4F+  errormsj	  DB	13,10,"	ERROR: PRESIONE	UNA TECLA PARA CONTINUAR... ","$"
+     28	      52 3A 20 50 52 45	53+
+     29	      49 4F 4E 45 20 55	4E+
+     30	      41 20 54 45 43 4C	41+
+     31	      20 50 41 52 41 20	43+
+     32	      4F 4E 54 49 4E 55	41+
+     33	      52 2E 2E 2E 20 24
+     34	00F9  ????		     Archivo DW	?
+     35	00FB  ??		     Buffer DB ?
+     36	00FC			     .code
+     37	0000			     Inicio:
+     38				     public _borradir
+     39	0000			     _borradir proc
+     40	0000  B8 0000s		     MOV AX, @data
+     41	0003  8E D8		     MOV DS, AX
+     42
+     43	0005  E8 0072		      call limpiar
+     44	0008  E8 007D		      call cursor
+     45	000B  BA 0000r			 lea   DX,men		     ;Lo que hacemos con estas instrucciones
+     46	000E  B4 09			 mov  AH,09		 ;es pasar a la	pantalla, el contenido
+     47	0010  CD 21			 int  21h		 ;de la	memoria, apuntado por EntradaDelFichero
+     48
+     49	0012  BA 0030r			 lea   DX,Nombre	     ; Puntero a la dirección para la entrada
+     50	0015  C6 06 0030r 3C		 mov   BYTE PTR	[Nombre],60; Fijamos los 60 caracteres
+     51	001A  B4 0A			 mov   AH,10			     ; función	de entrada de teclado
+     52	001C  CD 21			 int   21h
+     53
+     54	001E  E8 0059		      call limpiar
+     55	0021  E8 0064		      call cursor
+     56
+     57	0024  8A 1E 0031r		 mov bl,[Nombre+1]		     ; Esta es la longitud efectiva tecleada
+Turbo Assembler	 Version 3.1	    07/03/20 22:40:11	    Page 2
+BORRADIR.ASM
+
+
+
+     58	0028  B7 00			 mov   bh,0
+     59	002A  81 C3 0030r		 add   bx,OFFSET Nombre		     ; apuntamos  al final
+     60	002E  C6 47 02 00		 mov  BYTE PTR [BX+2],0		     ; ponemos el cero al final
+     61
+     62				     ;-------------------------------------------------- 1a. parte: Abrir el archivo		    +
+     63				     ---------------------------------
+     64	0032  E8 0045		     call limpiar
+     65	0035  E8 0050		     call cursor
+     66
+     67	0038  BA 0032r			     lea dx,Nombre+2
+     68	003B  B4 3A			 mov ah,3Ah
+     69	003D  CD 21			 int 21h
+     70	003F			     Error:
+     71	003F  B4 07		     mov ah,07h
+     72	0041  CD 21		     int 21h
+     73	0043  C3		     ret
+     74
+     75	0044			     Lectura:
+     76	0044  A3 00F9r		     MOV Archivo, AX ; Guardar el manejador o handle en	la variable
+     77
+     78				     ; 2a. parte: ciclo, leer un caracter y mostrarlo en pantalla
+     79				     ;
+     80	0047			     Ciclo:
+     81	0047  B4 3F		     MOV AH, 3Fh ; Servicio para leer
+     82	0049  BA 00FBr		     LEA DX, Buffer ; Buffer donde quedar la informaci¢n
+     83	004C  8B 1E 00F9r	     MOV BX, Archivo ; Handle
+     84	0050  B9 0001		     MOV CX, 1 ; Voy a leer 1 caracter a la vez
+     85	0053  CD 21		     INT 21h
+     86	0055  72 E8		     JC	Error
+     87	0057  3D 0000		     CMP AX, 0 ; Caracteres le¡dos
+     88	005A  74 0A		     JE	FinDeArchivo ; Si son 0, terminar
+     89				     ;
+     90				     ;--------------------------- Imprimir --------------------------------------
+     91				     ;
+     92	005C  B4 02		     MOV AH, 2 ; Servicio de imprimir un caracter
+     93	005E  8A 16 00FBr	     MOV DL, Buffer
+     94	0062  CD 21		     INT 21h
+     95	0064  EB E1		     JMP SHORT Ciclo ; Ciclarse. Uso SHORT porque est a	menos
+     96				     ; de 127 bytes de distancia
+     97	0066			     FinDeArchivo:
+     98
+     99				     ;------------------------------------------------------ Cerrar los	archivos		    +
+    100				     --------------------------------------------
+    101
+    102	0066  B4 3E		     MOV AH, 3Eh ; Servicio fclose
+    103	0068  8B 1E 00F9r	     MOV BX, Archivo ; Handle
+    104	006C  CD 21		     INT 21h
+    105
+    106	006E  B4 09		     mov  AH,09
+    107	0070  BA 00A3r		     lea dx, salirmsj ;	carga a	dx lo qe hay en	msg
+    108	0073  CD 21		     int 21h ; imprime la cadena
+    109	0075  B4 07		     mov ah,07h
+    110	0077  CD 21		     int 21h
+    111	0079  C3		     ret
+    112
+    113	007A			     limpiar proc near
+    114	007A  B8 0600			 mov ax, 0600h ;
+Turbo Assembler	 Version 3.1	    07/03/20 22:40:11	    Page 3
+BORRADIR.ASM
+
+
+
+    115	007D  B7 07			 mov bh,7h; ; color (7 para b/n)
+    116	007F  B9 0000			 mov cx, 0000 ;	desde 0,0
+    117	0082  BA 184F			 mov dx, 184fh ; hasta 24,79
+    118	0085  CD 10			 int 10h
+    119	0087  C3			 ret
+    120	0088			     limpiar endp
+    121
+    122	0088			     cursor proc near
+    123	0088  B4 02			 mov ah,02h
+    124	008A  B7 00			 mov bh,0h
+    125	008C  B6 01			 mov dh,1; dh para la fila
+    126	008E  B2 01			 mov dl,1; dl es para la columna
+    127	0090  CD 10			 int 10h
+    128	0092  C3			 ret
+    129	0093				     endp
+    130	0093			     endp _borradir
+    131				     END inicio
+Turbo Assembler	 Version 3.1	    07/03/20 22:40:11	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/03/20"
+??FILENAME			  Text	 "BORRADIR"
+??TIME				  Text	 "22:40:11"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 BORRADIR
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+ARCHIVO				  Word	 DGROUP:00F9
+BUFFER				  Byte	 DGROUP:00FB
+CICLO				  Near	 _TEXT:0047
+CURSOR				  Near	 _TEXT:0088
+ERROR				  Near	 _TEXT:003F
+ERRORMSJ			  Byte	 DGROUP:00C9
+FINDEARCHIVO			  Near	 _TEXT:0066
+INICIO				  Near	 _TEXT:0000
+LECTURA				  Near	 _TEXT:0044
+LIMPIAR				  Near	 _TEXT:007A
+MEN				  Byte	 DGROUP:0000
+MENSAJE1			  Byte	 DGROUP:0080
+NOMBRE				  Byte	 DGROUP:0030
+SALIRMSJ			  Byte	 DGROUP:00A3
+_BORRADIR (_borradir)		  Near	 _TEXT:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  00FC Word	  Public  DATA
+_TEXT				  16  0093 Word	  Public  CODE
+

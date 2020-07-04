@@ -1,0 +1,268 @@
+Turbo Assembler	 Version 3.1	    07/04/20 11:28:21	    Page 1
+LIBRE.ASM
+
+
+
+      1	0000			     .MODEL SMALL
+      2	0000			     .STACK
+      3	0000			     .DATA
+      4	0000  ?? 20 0A 0D	      menu db ,' ',10,13
+      5	0004  ?? 20 2D 2D 2D 2D	2D+   db ,' ----------------->PIANO<----------------- ',10,13
+      6	      2D 2D 2D 2D 2D 2D	2D+
+      7	      2D 2D 2D 2D 2D 3E	50+
+      8	      49 41 4E 4F 3C 2D	2D+
+      9	      2D 2D 2D 2D 2D 2D	2D+
+     10	      2D 2D 2D 2D 2D 2D	2D+
+     11	      2D 20 0A 0D
+     12	0032  ?? 20 0A 0D	      db ,' ',10,13
+     13	0036  ?? 20 0A 0D	      db ,' ',10,13
+     14	003A  ?? 20 7C 20 31 20	7C+   db ,' | 1	| | 2 |	3 | 4 |	5 | 6 |	7 | 8 |' ,10,13
+     15	      20 7C 20 32 20 7C	20+
+     16	      33 20 7C 20 34 20	7C+
+     17	      20 35 20 7C 20 36	20+
+     18	      7C 20 37 20 7C 20	38+
+     19	      20 7C 0A 0D
+     20	0061  ?? 20 7C 20 44 6F	7C+   db ,' | Do| | Re|	Mi| Fa|	So| La|	Si|Do#|	$',10,13
+     21	      20 7C 20 52 65 7C	20+
+     22	      4D 69 7C 20 46 61	7C+
+     23	      20 53 6F 7C 20 4C	61+
+     24	      7C 20 53 69 7C 44	6F+
+     25	      23 7C 20 24 0A 0D
+     26	008A  ?? 20 0A 0D	      db ,' ',10,13
+     27	008E  ?? 20 0A 0D	      db ,' ',10,13
+     28
+     29	0092			     .code
+     30	0000			     inicio:
+     31				     public _libre
+     32	0000			     _libre proc
+     33
+     34	0000			     principal proc far
+     35	0000  1E		      push ds
+     36	0001  B7 30		      mov bh, 30h
+     37	0003  E8 009A		      call borrar
+     38	0006  B6 05		      mov dh, 5
+     39	0008  B2 0A		      mov dl, 10
+     40	000A  E8 00A1		      call cursor
+     41	000D  2B C0		      sub ax,ax
+     42	000F  50		      push ax
+     43
+     44	0010  B8 0000s		      mov ax,@DATA
+     45	0013  8E D8		      mov ds,ax
+     46	0015  BA 0000r		      lea dx,menu
+     47	0018  B4 09		      mov ah,09
+     48	001A  CD 21		      int 21h
+     49
+     50	001C  E8 001A		      denuevo: call ingresa
+     51	001F  80 FC 01		      cmp ah,01h
+     52	0022  74 14		      je dos
+     53	0024  E8 008E		      call frecuencia
+     54	0027  E8 009A		      call inicializa
+     55	002A  E8 009E		      call cargar
+     56	002D  E8 00A6		      call sonido
+     57	0030  E8 005F		      call retardo
+Turbo Assembler	 Version 3.1	    07/04/20 11:28:21	    Page 2
+LIBRE.ASM
+
+
+
+     58	0033  E8 00A9		      call desactivar
+     59
+     60	0036  EB E4		      jmp denuevo
+     61	0038  CB		      dos: ret
+     62	0039			     principal endp
+     63
+     64	0039			     ingresa proc near
+     65	0039  B4 00		      ingr: mov	ah,00
+     66	003B  CD 16		      int 16h
+     67	003D  80 FC 01		      cmp ah,01h
+     68	0040  74 4F		      je fin
+     69	0042  3C 61		      cmp al,061h
+     70	0044  74 1E		      je a
+     71	0046  3C 73		      cmp al,073h
+     72	0048  74 20		      je b
+     73	004A  3C 64		      cmp al,064h
+     74	004C  74 22		      je c
+     75	004E  3C 66		      cmp al,066h
+     76	0050  74 24		      je d
+     77	0052  3C 67		      cmp al,067h
+     78	0054  74 26		      je e
+     79	0056  3C 68		      cmp al,068h
+     80	0058  74 28		      je f
+     81	005A  3C 6A		      cmp al,06ah
+     82	005C  74 2A		      je g
+     83	005E  3C 71		      cmp al,071h
+     84	0060  74 2C		      je h
+     85	0062  EB D5		      jmp ingr
+     86
+     87	0064  B9 082D		      a: mov cx,2093 ; do
+     88	0067  EB 28 90		      jmp fin
+     89	006A  B9 092D		      b: mov cx,2349 ; re
+     90	006D  EB 22 90		      jmp fin
+     91	0070  B9 0A4D		      c: mov cx,2637 ; mi
+     92	0073  EB 1C 90		      jmp fin
+     93	0076  B9 0AEA		      d: mov cx,2794 ; fa
+     94	0079  EB 16 90		      jmp fin
+     95	007C  B9 0C40		      e: mov cx,3136 ; so
+     96	007F  EB 10 90		      jmp fin
+     97	0082  B9 0DC0		      f: mov cx,3520 ; la
+     98	0085  EB 0A 90		      jmp fin
+     99	0088  B9 0F6F		      g: mov cx,3951 ; si
+    100	008B  EB 04 90		      jmp fin
+    101	008E  B9 08A9		      h: mov cx,2217; do#
+    102	0091  C3		      fin:ret
+    103	0092			     ingresa endp
+    104
+    105	0092			     retardo proc near
+    106	0092  51		      push cx
+    107	0093  B9 012C		      mov cx,12ch
+    108	0096  BB 013C		      v1:mov bx,13ch
+    109
+    110	0099  4B		      v5:dec bx
+    111	009A  75 FD		      jnz v5
+    112	009C  E2 F8		      loop v1
+    113	009E  59		      pop cx
+    114	009F  C3		      ret
+Turbo Assembler	 Version 3.1	    07/04/20 11:28:21	    Page 3
+LIBRE.ASM
+
+
+
+    115	00A0			     retardo endp
+    116
+    117	00A0			     borrar proc
+    118	00A0  B9 0000		      mov cx, 0
+    119	00A3  B6 18		      mov dh, 24
+    120	00A5  B2 4F		      mov dl, 79
+    121	00A7  B0 00		      mov al,0
+    122	00A9  B4 06		      mov ah,6
+    123	00AB  CD 10		      int 10h
+    124	00AD  C3		      ret
+    125	00AE			     borrar endp
+    126	00AE			     cursor proc
+    127	00AE  B4 02		      mov ah, 2
+    128	00B0  B7 00		      mov bh, 0
+    129	00B2  CD 10		      int 10h
+    130	00B4  C3		      ret
+    131	00B5			     cursor endp
+    132
+    133	00B5			     frecuencia	proc near
+    134	00B5  50		      push ax
+    135	00B6  52		      push dx
+    136	00B7  BA 0012		      mov dx,12h
+    137	00BA  B8 34DC		      mov ax,34dch
+    138	00BD  F7 F1		      div cx
+    139	00BF  8B C8		      mov cx,ax
+    140	00C1  5A		      pop dx
+    141	00C2  58		      pop ax
+    142
+    143	00C3  C3		      ret
+    144	00C4			     frecuencia	endp
+    145	00C4			     inicializa	proc near
+    146	00C4  50		      push ax
+    147	00C5  B0 B6		      mov al,182
+    148	00C7  E6 43		      out 67,al
+    149	00C9  58		      pop ax
+    150	00CA  C3		      ret
+    151	00CB			     inicializa	endp
+    152	00CB			     cargar proc near
+    153	00CB  50		      push ax
+    154	00CC  8A C1		      mov al,cl
+    155	00CE  E6 42		      out 66,al
+    156	00D0  8A C5		      mov al,ch
+    157	00D2  E6 42		      out 66,al
+    158	00D4  58		      pop ax
+    159	00D5  C3		      ret
+    160	00D6			     cargar endp
+    161
+    162
+    163	00D6			     sonido proc near
+    164	00D6  50		      push ax
+    165	00D7  E4 61		      in al,97
+    166	00D9  0C 03		      or al,03h
+    167	00DB  E6 61		      out 97,al
+    168
+    169	00DD  58		      pop ax
+    170	00DE  C3		      ret
+    171	00DF			     sonido endp
+Turbo Assembler	 Version 3.1	    07/04/20 11:28:21	    Page 4
+LIBRE.ASM
+
+
+
+    172
+    173
+    174	00DF			     desactivar	proc near
+    175	00DF  50		      push ax
+    176	00E0  E4 61		      in al,97
+    177	00E2  24 FC		      and al,0fch
+    178	00E4  E6 61		      out 97,al
+    179	00E6  58		      pop ax
+    180	00E7  C3		      ret
+    181	00E8			     desactivar	endp
+    182				      end principal
+*Warning* LIBRE.ASM(166) Open procedure: _LIBRE
+Turbo Assembler	 Version 3.1	    07/04/20 11:28:21	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/04/20"
+??FILENAME			  Text	 "LIBRE	  "
+??TIME				  Text	 "11:28:21"
+??VERSION			  Number 030A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 LIBRE
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+A				  Near	 _TEXT:0064
+B				  Near	 _TEXT:006A
+BORRAR				  Near	 _TEXT:00A0
+C				  Near	 _TEXT:0070
+CARGAR				  Near	 _TEXT:00CB
+CURSOR				  Near	 _TEXT:00AE
+D				  Near	 _TEXT:0076
+DENUEVO				  Near	 _TEXT:001C
+DESACTIVAR			  Near	 _TEXT:00DF
+DOS				  Near	 _TEXT:0038
+E				  Near	 _TEXT:007C
+F				  Near	 _TEXT:0082
+FIN				  Near	 _TEXT:0091
+FRECUENCIA			  Near	 _TEXT:00B5
+G				  Near	 _TEXT:0088
+H				  Near	 _TEXT:008E
+INGR				  Near	 _TEXT:0039
+INGRESA				  Near	 _TEXT:0039
+INICIALIZA			  Near	 _TEXT:00C4
+INICIO				  Near	 _TEXT:0000
+MENU				  Byte	 DGROUP:0000
+PRINCIPAL			  Far	 _TEXT:0000
+RETARDO				  Near	 _TEXT:0092
+SONIDO				  Near	 _TEXT:00D6
+V1				  Near	 _TEXT:0096
+V5				  Near	 _TEXT:0099
+_LIBRE (_libre)			  Near	 _TEXT:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0400 Para	  Stack	  STACK
+  _DATA				  16  0092 Word	  Public  DATA
+_TEXT				  16  00E8 Word	  Public  CODE
+Turbo Assembler	 Version 3.1	    07/04/20 11:28:21	    Page 6
+Error Summary
+
+
+
+*Warning* LIBRE.ASM(166) Open procedure: _LIBRE
+

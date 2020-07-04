@@ -71,7 +71,7 @@ void fichero()
         }
         case '2':
         {
-            borradir();
+            crearchi();
             break;
         }
         case '3':
@@ -115,10 +115,3 @@ void fichero()
         }
     } while (o != '0');
 }
-
-void libre(){
-    system("cls");
-    printf("EL LIBRE ESTA EN PROCESO");
-    system("pause>0");
-}
-
