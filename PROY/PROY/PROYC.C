@@ -71,7 +71,7 @@ void fichero()
         }
         case '2':
         {
-            crearchi();
+            borradir();
             break;
         }
         case '3':
